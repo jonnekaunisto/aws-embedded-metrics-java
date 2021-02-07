@@ -33,21 +33,18 @@ import lombok.With;
 @AllArgsConstructor
 @JsonFilter("emptyMetricFilter")
 class RootNode {
+    private static final ObjectMapper objectMapper = createObjectMapper();
+
     @Getter
     @With
     @JsonProperty("_aws")
     private Metadata aws;
 
     private Map<String, Object> properties;
-    private ObjectMapper objectMapper;
 
     RootNode() {
-        final SimpleFilterProvider filterProvider =
-                new SimpleFilterProvider().addFilter("emptyMetricFilter", new EmptyMetricsFilter());
         aws = new Metadata();
         properties = new HashMap<>();
-        objectMapper = new ObjectMapper();
-        objectMapper.setFilterProvider(filterProvider);
     }
 
     public void putProperty(String key, Object value) {
@@ -90,5 +87,13 @@ class RootNode {
 
     String serialize() throws JsonProcessingException {
         return objectMapper.writeValueAsString(this);
+    }
+    
+    private static ObjectMapper createObjectMapper() {
+        final SimpleFilterProvider filterProvider =
+                new SimpleFilterProvider().addFilter("emptyMetricFilter", new EmptyMetricsFilter());
+        objectMapper = new ObjectMapper();
+        objectMapper.setFilterProvider(filterProvider);
+        return objectMapper;
     }
 }
